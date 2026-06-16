@@ -5,7 +5,7 @@ import * as authService from '../services/auth.service.js'
 
 const router = Router()
 
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { username, password } = req.body as { username?: string; password?: string }
 
   if (!username || !password) {
@@ -13,7 +13,7 @@ router.post('/login', (req, res) => {
     return
   }
 
-  const result = authService.login(username, password)
+  const result = await authService.login(username, password)
   if ('error' in result) {
     res.status(401).json({ error: result.error })
     return
@@ -22,7 +22,7 @@ router.post('/login', (req, res) => {
   res.json(result)
 })
 
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
   const { username, displayName, password } = req.body as {
     username?: string
     displayName?: string
@@ -34,7 +34,7 @@ router.post('/register', (req, res) => {
     return
   }
 
-  const result = authService.register(username, displayName, password)
+  const result = await authService.register(username, displayName, password)
   if ('error' in result) {
     res.status(400).json({ error: result.error })
     return
@@ -43,8 +43,8 @@ router.post('/register', (req, res) => {
   res.status(201).json(result)
 })
 
-router.get('/me', requireAuth, (req: AuthRequest, res) => {
-  const result = authService.getMe(req.userId!)
+router.get('/me', requireAuth, async (req: AuthRequest, res) => {
+  const result = await authService.getMe(req.userId!)
   if ('error' in result) {
     res.status(404).json({ error: result.error })
     return
@@ -53,10 +53,10 @@ router.get('/me', requireAuth, (req: AuthRequest, res) => {
   res.json(result)
 })
 
-router.post('/logout', requireAuth, (req: AuthRequest, res) => {
+router.post('/logout', requireAuth, async (req: AuthRequest, res) => {
   const header = req.headers.authorization
   const token = header?.startsWith('Bearer ') ? header.slice(7) : undefined
-  if (token) authService.logout(token)
+  if (token) await authService.logout(token)
   res.json({ success: true })
 })
 

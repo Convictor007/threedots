@@ -1,4 +1,4 @@
-import { Router, type Request, type Response, type NextFunction } from 'express'
+import { Router, type Request, type Response } from 'express'
 import type { AuthRequest } from '../middleware/auth.middleware.js'
 import { requireAuth } from '../middleware/auth.middleware.js'
 import {
@@ -16,7 +16,7 @@ function handleUpload(
   uploader: typeof uploadImage,
   urlBuilder: (filename: string) => string,
 ) {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
+  return (req: AuthRequest, res: Response) => {
     uploader(req as Request, res, (err: unknown) => {
       if (err) {
         const message = err instanceof Error ? err.message : 'Upload failed'

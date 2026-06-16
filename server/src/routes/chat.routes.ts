@@ -7,17 +7,17 @@ const router = Router()
 
 router.use(requireAuth)
 
-router.get('/conversations', (req: AuthRequest, res) => {
-  const result = chatService.listConversations(req.userId!)
+router.get('/conversations', async (req: AuthRequest, res) => {
+  const result = await chatService.listConversations(req.userId!)
   res.json(result)
 })
 
-router.get('/users', (req: AuthRequest, res) => {
-  const result = chatService.listUsers(req.userId!)
+router.get('/users', async (req: AuthRequest, res) => {
+  const result = await chatService.listUsers(req.userId!)
   res.json(result)
 })
 
-router.post('/conversations', (req: AuthRequest, res) => {
+router.post('/conversations', async (req: AuthRequest, res) => {
   const { userId: otherUserId } = req.body as { userId?: string }
 
   if (!otherUserId) {
@@ -25,7 +25,7 @@ router.post('/conversations', (req: AuthRequest, res) => {
     return
   }
 
-  const result = chatService.startConversation(req.userId!, otherUserId)
+  const result = await chatService.startConversation(req.userId!, otherUserId)
   if ('error' in result) {
     res.status(400).json({ error: result.error })
     return
@@ -34,9 +34,9 @@ router.post('/conversations', (req: AuthRequest, res) => {
   res.status(201).json(result)
 })
 
-router.get('/conversations/:id/messages', (req: AuthRequest, res) => {
+router.get('/conversations/:id/messages', async (req: AuthRequest, res) => {
   const conversationId = String(req.params.id)
-  const result = chatService.getMessages(conversationId, req.userId!)
+  const result = await chatService.getMessages(conversationId, req.userId!)
   if ('error' in result) {
     res.status(404).json({ error: result.error })
     return
@@ -45,7 +45,7 @@ router.get('/conversations/:id/messages', (req: AuthRequest, res) => {
   res.json(result)
 })
 
-router.post('/conversations/:id/messages', (req: AuthRequest, res) => {
+router.post('/conversations/:id/messages', async (req: AuthRequest, res) => {
   const conversationId = String(req.params.id)
   const body = req.body as {
     type?: 'text' | 'image' | 'voice'
@@ -54,7 +54,7 @@ router.post('/conversations/:id/messages', (req: AuthRequest, res) => {
     duration?: number
   }
 
-  const result = chatService.sendMessage(conversationId, req.userId!, {
+  const result = await chatService.sendMessage(conversationId, req.userId!, {
     type: body.type ?? 'text',
     content: body.content,
     mediaUrl: body.mediaUrl,
