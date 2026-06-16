@@ -52,7 +52,7 @@ export function PinLockScreen({ onUnlock }: PinLockScreenProps) {
           </div>
 
           <input
-            type="password"
+            type="tel"
             inputMode="numeric"
             pattern="[0-9]*"
             maxLength={6}
@@ -62,6 +62,7 @@ export function PinLockScreen({ onUnlock }: PinLockScreenProps) {
             autoFocus
             autoComplete="off"
             aria-label="Wellness PIN"
+            placeholder="Enter PIN"
           />
 
           {error && <p className="pin-lock__error">{error}</p>}

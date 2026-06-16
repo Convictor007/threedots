@@ -54,11 +54,24 @@
 }
 
 .pin-lock__input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-  width: 0;
-  height: 0;
+  width: 100%;
+  max-width: 220px;
+  margin: 0 auto 12px;
+  display: block;
+  padding: 10px 14px;
+  border: 1px solid #b7e4c7;
+  border-radius: 10px;
+  background: #f8fdf9;
+  text-align: center;
+  font-size: 18px;
+  letter-spacing: 6px;
+  color: #1b4332;
+  outline: none;
+}
+
+.pin-lock__input:focus {
+  border-color: #2d6a4f;
+  box-shadow: 0 0 0 2px rgba(45, 106, 79, 0.15);
 }
 
 .pin-lock__error {
