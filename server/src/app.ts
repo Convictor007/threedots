@@ -3,6 +3,7 @@ import cors from 'cors'
 import authRoutes from './routes/auth.routes.js'
 import chatRoutes from './routes/chat.routes.js'
 import mediaRoutes from './routes/media.routes.js'
+import realtimeRoutes from './routes/realtime.routes.js'
 import { ensureUploadDirs, UPLOADS_ROOT } from './config/uploads.js'
 
 export function createApp() {
@@ -22,6 +23,7 @@ export function createApp() {
   app.use('/api/auth', authRoutes)
   app.use('/api/chat', chatRoutes)
   app.use('/api/chat/media', mediaRoutes)
+  app.use('/api/realtime', realtimeRoutes)
 
   return app
 }

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { chatApi } from '../api/chat.api'
 import { mediaApi } from '../api/media.api'
+import { conversationChannel, getPusherClient } from '../lib/realtime'
 import { useAuth } from '../context/AuthContext'
 import { usePinLock } from '../context/PinLockContext'
 import { ConversationList } from '../components/chat/ConversationList'
@@ -44,14 +45,58 @@ export function ChatPage() {
       return
     }
 
-    chatApi.getMessages(activeId).then(({ messages: msgs }) => setMessages(msgs))
+    let cancelled = false
+    chatApi.getMessages(activeId).then(({ messages: msgs }) => {
+      if (!cancelled) setMessages(msgs)
+    })
 
     const interval = setInterval(() => {
       chatApi.getMessages(activeId).then(({ messages: msgs }) => setMessages(msgs))
-    }, 3000)
+    }, 30000)
 
-    return () => clearInterval(interval)
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
   }, [activeId, locked])
+
+  useEffect(() => {
+    if (!activeId || locked) return
+
+    const pusher = getPusherClient()
+    if (!pusher) return
+
+    const channel = pusher.subscribe(conversationChannel(activeId))
+
+    const onNew = (message: Message) => {
+      setMessages((prev) => (prev.some((m) => m.id === message.id) ? prev : [...prev, message]))
+      void loadConversations()
+    }
+
+    const onDeleted = ({ messageId }: { messageId: string }) => {
+      setMessages((prev) => prev.filter((m) => m.id !== messageId))
+      void loadConversations()
+    }
+
+    const onConversationDeleted = ({ conversationId }: { conversationId: string }) => {
+      if (conversationId === activeId) {
+        setActiveId(null)
+        setMessages([])
+      }
+      void loadConversations()
+    }
+
+    channel.bind('message:new', onNew)
+    channel.bind('message:deleted', onDeleted)
+    channel.bind('conversation:deleted', onConversationDeleted)
+
+    return () => {
+      channel.unbind('message:new', onNew)
+      channel.unbind('message:deleted', onDeleted)
+      channel.unbind('conversation:deleted', onConversationDeleted)
+      pusher.unsubscribe(conversationChannel(activeId))
+    }
+  }, [activeId, locked, loadConversations])
 
   async function handleSendText(content: string) {
     if (!activeId) return

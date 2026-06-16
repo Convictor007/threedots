@@ -1,6 +1,7 @@
 import { deleteMediaFile } from '../middleware/upload.middleware.js'
 import { randomUUID } from 'node:crypto'
 import { db } from '../db/client.js'
+import { conversationChannel, getPusherServer } from '../lib/realtime.js'
 import type { Message, SendMessageInput } from '../types/index.js'
 
 function previewForMessage(input: SendMessageInput): string {
@@ -189,7 +190,13 @@ export async function sendMessage(conversationId: string, userId: string, input:
 
   await db.query('update conversations set updated_at = now() where id = $1', [conversationId])
 
-  return { message: mapMessage(insert.rows[0]) }
+  const message = mapMessage(insert.rows[0])
+  const pusher = getPusherServer()
+  if (pusher) {
+    await pusher.trigger(conversationChannel(conversationId), 'message:new', message)
+  }
+
+  return { message }
 }
 
 export async function startConversation(userId: string, otherUserId: string) {
@@ -257,6 +264,14 @@ export async function deleteConversation(conversationId: string, userId: string)
   )
   await Promise.all(mediaRows.rows.map((row) => deleteMediaFile(row.media_url ?? undefined)))
   await db.query('delete from conversations where id = $1', [conversationId])
+
+  const pusher = getPusherServer()
+  if (pusher) {
+    await pusher.trigger(conversationChannel(conversationId), 'conversation:deleted', {
+      conversationId,
+    })
+  }
+
   return { success: true as const }
 }
 
@@ -295,6 +310,14 @@ export async function deleteMessage(conversationId: string, messageId: string, u
      where id = $1`,
     [conversationId],
   )
+
+  const pusher = getPusherServer()
+  if (pusher) {
+    await pusher.trigger(conversationChannel(conversationId), 'message:deleted', {
+      conversationId,
+      messageId,
+    })
+  }
 
   return { success: true as const }
 }
