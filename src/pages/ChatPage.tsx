@@ -26,6 +26,8 @@ export function ChatPage() {
   const [users, setUsers] = useState<User[]>([])
   const [loadingConversations, setLoadingConversations] = useState(true)
   const [loadingMessages, setLoadingMessages] = useState(false)
+  const [busyLabel, setBusyLabel] = useState<string | null>(null)
+  const [loggingOut, setLoggingOut] = useState(false)
 
   const activeConversation = conversations.find((c) => c.id === activeId) ?? null
 
@@ -113,18 +115,21 @@ export function ChatPage() {
   async function handleSendText(content: string) {
     if (!activeId) return
     setSending(true)
+    setBusyLabel('Sending message...')
     try {
       const { message } = await chatApi.sendText(activeId, content)
       setMessages((prev) => [...prev, message])
       await loadConversations()
     } finally {
       setSending(false)
+      setBusyLabel(null)
     }
   }
 
   async function handleSendImage(file: File) {
     if (!activeId) return
     setSending(true)
+    setBusyLabel('Uploading image...')
     try {
       const { url } = await mediaApi.uploadImage(file)
       const { message } = await chatApi.sendImage(activeId, url)
@@ -132,12 +137,14 @@ export function ChatPage() {
       await loadConversations()
     } finally {
       setSending(false)
+      setBusyLabel(null)
     }
   }
 
   async function handleSendVoice(blob: Blob, duration: number) {
     if (!activeId) return
     setSending(true)
+    setBusyLabel('Uploading voice note...')
     try {
       const { url } = await mediaApi.uploadAudio(blob)
       const { message } = await chatApi.sendVoice(activeId, url, duration)
@@ -145,6 +152,16 @@ export function ChatPage() {
       await loadConversations()
     } finally {
       setSending(false)
+      setBusyLabel(null)
+    }
+  }
+
+  async function handleLogout() {
+    setLoggingOut(true)
+    try {
+      await logout()
+    } finally {
+      setLoggingOut(false)
     }
   }
 
@@ -208,8 +225,8 @@ export function ChatPage() {
               <path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.07 7.07 0 0 0-1.63-.94l-.36-2.54A.49.49 0 0 0 14 2h-4a.49.49 0 0 0-.49.42l-.36 2.54a7.07 7.07 0 0 0-1.63.94l-2.39-.96a.49.49 0 0 0-.59.22L2.62 8.04a.49.49 0 0 0 .12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.14.24.44.32.68.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.05.24.24.42.49.42h4c.25 0 .44-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.24.1.54.02.68-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z" />
             </svg>
           </button>
-          <button type="button" className="logout-btn" onClick={() => logout()}>
-            Sign out
+          <button type="button" className="logout-btn" onClick={handleLogout} disabled={loggingOut}>
+            {loggingOut ? 'Signing out...' : 'Sign out'}
           </button>
         </div>
       </header>
@@ -242,6 +259,7 @@ export function ChatPage() {
           onDeleteConversation={handleDeleteConversation}
           onDeleteMessage={handleDeleteMessage}
           loadingMessages={loadingMessages}
+          busyLabel={busyLabel}
           sending={sending}
         />
       </div>

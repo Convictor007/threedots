@@ -98,7 +98,13 @@ export function LoginForm() {
           {error && <p className="form-error">{error}</p>}
 
           <button type="submit" className="login-submit" disabled={submitting}>
-            {submitting ? 'Please wait…' : mode === 'login' ? 'Access Dashboard' : 'Join Program'}
+            {submitting
+              ? mode === 'login'
+                ? 'Signing in...'
+                : 'Creating account...'
+              : mode === 'login'
+                ? 'Access Dashboard'
+                : 'Join Program'}
           </button>
         </form>
 

@@ -20,6 +20,7 @@ interface ChatWindowProps {
   onDeleteMessage?: (messageId: string) => void
   loadingMessages?: boolean
   sending?: boolean
+  busyLabel?: string | null
 }
 
 export function ChatWindow({
@@ -34,6 +35,7 @@ export function ChatWindow({
   onDeleteMessage,
   loadingMessages,
   sending,
+  busyLabel,
 }: ChatWindowProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -117,6 +119,7 @@ export function ChatWindow({
         onSendImage={onSendImage}
         onSendVoice={onSendVoice}
         disabled={sending}
+        busyLabel={busyLabel}
       />
     </div>
   )

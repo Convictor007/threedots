@@ -8,6 +8,7 @@ interface MessageInputProps {
   onSendImage: (file: File) => void
   onSendVoice: (blob: Blob, duration: number) => void
   disabled?: boolean
+  busyLabel?: string | null
 }
 
 export function MessageInput({
@@ -15,6 +16,7 @@ export function MessageInput({
   onSendImage,
   onSendVoice,
   disabled,
+  busyLabel,
 }: MessageInputProps) {
   const [text, setText] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
@@ -62,6 +64,12 @@ export function MessageInput({
 
   return (
     <div className="message-input-wrap">
+      {busyLabel && !isRecording && (
+        <div className="message-input-busy" role="status" aria-live="polite">
+          <span className="message-input-busy__spinner" />
+          <span>{busyLabel}</span>
+        </div>
+      )}
       {isRecording && (
         <div className="message-input-recording">
           <span className="message-input-recording__dot" />

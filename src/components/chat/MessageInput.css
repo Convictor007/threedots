@@ -3,6 +3,32 @@
   border-top: 1px solid #b7e4c7;
 }
 
+.message-input-busy {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #edf7ee;
+  color: #1b4332;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.message-input-busy__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #95d5b2;
+  border-top-color: #2d6a4f;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .message-input-recording {
   display: flex;
   align-items: center;

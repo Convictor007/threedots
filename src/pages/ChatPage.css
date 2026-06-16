@@ -79,6 +79,11 @@
   background: #d8f3dc;
 }
 
+.logout-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .chat-page__body {
   flex: 1;
   display: flex;
