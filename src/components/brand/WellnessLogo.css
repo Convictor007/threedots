@@ -1,0 +1,52 @@
+.wellness-logo {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.wellness-logo svg {
+  display: block;
+}
+
+.wellness-logo--sm svg {
+  width: 32px;
+  height: 32px;
+}
+
+.wellness-logo--md svg {
+  width: 56px;
+  height: 56px;
+}
+
+.wellness-logo--lg svg {
+  width: 80px;
+  height: 80px;
+}
+
+.wellness-logo__bg {
+  fill: url(#wellness-gradient);
+}
+
+.wellness-logo svg defs {
+  display: none;
+}
+
+.wellness-logo__leaf {
+  fill: #d8f3dc;
+}
+
+.wellness-logo__vein {
+  stroke: #2d6a4f;
+  fill: none;
+}
+
+.wellness-logo svg {
+  filter: drop-shadow(0 2px 4px rgba(45, 106, 79, 0.25));
+}
+
+.wellness-logo svg circle {
+  fill: linear-gradient(135deg, #2d6a4f, #52b788);
+}
+
+.wellness-logo svg .wellness-logo__bg {
+  fill: #2d6a4f;
+}

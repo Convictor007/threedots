@@ -1,0 +1,96 @@
+.pin-lock {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: linear-gradient(160deg, #1b4332 0%, #2d6a4f 40%, #40916c 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.pin-lock__card {
+  width: 100%;
+  max-width: 380px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 40px 32px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.pin-lock__card h1 {
+  margin: 20px 0 8px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1b4332;
+}
+
+.pin-lock__card > p {
+  margin: 0 0 28px;
+  font-size: 14px;
+  color: #52796f;
+  line-height: 1.5;
+}
+
+.pin-lock__dots {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.pin-lock__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #95d5b2;
+  background: transparent;
+}
+
+.pin-lock__dot--filled {
+  background: #2d6a4f;
+  border-color: #2d6a4f;
+}
+
+.pin-lock__input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+
+.pin-lock__error {
+  color: #d00000;
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+
+.pin-lock form button {
+  width: 100%;
+  padding: 12px;
+  background: #2d6a4f;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.pin-lock form button:hover:not(:disabled) {
+  background: #1b4332;
+}
+
+.pin-lock form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pin-lock__hint {
+  margin: 20px 0 0;
+  font-size: 12px;
+  color: #84a98c;
+}

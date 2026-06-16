@@ -1,0 +1,129 @@
+.settings-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(27, 67, 50, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 24px;
+}
+
+.settings-modal__content {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.settings-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.settings-modal__header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #1b4332;
+}
+
+.settings-modal__close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #d8f3dc;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 1;
+  color: #2d6a4f;
+  cursor: pointer;
+}
+
+.settings-modal__desc {
+  margin: 0 0 20px;
+  font-size: 14px;
+  color: #52796f;
+  line-height: 1.5;
+}
+
+.settings-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.settings-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1b4332;
+}
+
+.settings-field input {
+  padding: 10px 14px;
+  border: 1px solid #b7e4c7;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+}
+
+.settings-field input:focus {
+  border-color: #2d6a4f;
+  box-shadow: 0 0 0 2px rgba(45, 106, 79, 0.15);
+}
+
+.settings-error {
+  color: #d00000;
+  font-size: 13px;
+  margin: 0;
+}
+
+.settings-success {
+  color: #2d6a4f;
+  font-size: 13px;
+  margin: 0;
+}
+
+.settings-save {
+  padding: 11px;
+  background: #2d6a4f;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.settings-save:hover:not(:disabled) {
+  background: #1b4332;
+}
+
+.settings-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.settings-remove {
+  margin-top: 16px;
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid #d00000;
+  color: #d00000;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.settings-remove:hover {
+  background: #fff5f5;
+}
