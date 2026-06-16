@@ -12,11 +12,13 @@ interface ChatWindowProps {
   conversation: ConversationPreview | null
   messages: Message[]
   currentUserId: string
+  onBackToList?: () => void
   onSendText: (content: string) => void
   onSendImage: (file: File) => void
   onSendVoice: (blob: Blob, duration: number) => void
   onDeleteConversation?: (conversationId: string) => void
   onDeleteMessage?: (messageId: string) => void
+  loadingMessages?: boolean
   sending?: boolean
 }
 
@@ -24,11 +26,13 @@ export function ChatWindow({
   conversation,
   messages,
   currentUserId,
+  onBackToList,
   onSendText,
   onSendImage,
   onSendVoice,
   onDeleteConversation,
   onDeleteMessage,
+  loadingMessages,
   sending,
 }: ChatWindowProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -61,6 +65,18 @@ export function ChatWindow({
   return (
     <div className="chat-window">
       <header className="chat-window__header">
+        {onBackToList && (
+          <button
+            type="button"
+            className="chat-window__back-btn"
+            onClick={onBackToList}
+            aria-label="Back to sessions"
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+            </svg>
+          </button>
+        )}
         <Avatar user={participant} size="sm" />
         <div className="chat-window__header-info">
           <h3>{participant.displayName}</h3>
@@ -80,6 +96,11 @@ export function ChatWindow({
       </header>
 
       <div className="chat-window__messages">
+        {loadingMessages && (
+          <div className="chat-window__loading" role="status" aria-live="polite">
+            Loading messages...
+          </div>
+        )}
         {messages.map((msg) => (
           <MessageBubble
             key={msg.id}

@@ -24,13 +24,20 @@ export function ChatPage() {
   const [showNewChat, setShowNewChat] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [users, setUsers] = useState<User[]>([])
+  const [loadingConversations, setLoadingConversations] = useState(true)
+  const [loadingMessages, setLoadingMessages] = useState(false)
 
   const activeConversation = conversations.find((c) => c.id === activeId) ?? null
 
   const loadConversations = useCallback(async () => {
-    const { conversations: convs } = await chatApi.getConversations()
-    setConversations(convs)
-    return convs
+    setLoadingConversations(true)
+    try {
+      const { conversations: convs } = await chatApi.getConversations()
+      setConversations(convs)
+      return convs
+    } finally {
+      setLoadingConversations(false)
+    }
   }, [])
 
   useEffect(() => {
@@ -42,12 +49,17 @@ export function ChatPage() {
   useEffect(() => {
     if (!activeId || locked) {
       setMessages([])
+      setLoadingMessages(false)
       return
     }
 
     let cancelled = false
+    setLoadingMessages(true)
     chatApi.getMessages(activeId).then(({ messages: msgs }) => {
-      if (!cancelled) setMessages(msgs)
+      if (!cancelled) {
+        setMessages(msgs)
+        setLoadingMessages(false)
+      }
     })
 
     const interval = setInterval(() => {
@@ -202,7 +214,16 @@ export function ChatPage() {
         </div>
       </header>
 
-      <div className="chat-page__body">
+      <div
+        className={`chat-page__body ${
+          activeConversation ? 'chat-page__body--conversation-active' : ''
+        }`}
+      >
+        {loadingConversations && (
+          <div className="chat-page__loading-banner" role="status" aria-live="polite">
+            Loading conversations...
+          </div>
+        )}
         <ConversationList
           conversations={conversations}
           activeId={activeId}
@@ -214,11 +235,13 @@ export function ChatPage() {
           conversation={activeConversation}
           messages={messages}
           currentUserId={user.id}
+          onBackToList={() => setActiveId(null)}
           onSendText={handleSendText}
           onSendImage={handleSendImage}
           onSendVoice={handleSendVoice}
           onDeleteConversation={handleDeleteConversation}
           onDeleteMessage={handleDeleteMessage}
+          loadingMessages={loadingMessages}
           sending={sending}
         />
       </div>
