@@ -64,7 +64,7 @@ export async function login(username: string, password: string) {
      from users where username = $1 limit 1`,
     [username.toLowerCase()],
   )
-  let user = result.rows[0]
+  const user = result.rows[0]
   if (!user || user.password_hash !== hashPassword(password)) {
     return { error: 'Invalid username or password' as const }
   }

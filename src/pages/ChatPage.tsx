@@ -61,6 +61,7 @@ export function ChatPage({ onOpenAdmin }: ChatPageProps) {
 
   const activeConversation = conversations.find((c) => c.id === activeId) ?? null
   const activeParticipant = activeConversation?.participant
+  const activeParticipantName = activeParticipant?.displayName
 
   type OutboxTask =
     | {
@@ -83,15 +84,25 @@ export function ChatPage({ onOpenAdmin }: ChatPageProps) {
         duration: number
       }
 
-  const sortByCreatedAt = (items: Message[]) =>
-    [...items].sort((a, b) => +new Date(a.createdAt) - +new Date(b.createdAt))
+  const sortByCreatedAt = useCallback(
+    (items: Message[]) => [...items].sort((a, b) => +new Date(a.createdAt) - +new Date(b.createdAt)),
+    [],
+  )
 
-  const mergeMessages = (current: Message[], incoming: Message[]) => {
-    const byId = new Map<string, Message>()
-    current.forEach((message) => byId.set(message.id, message))
-    incoming.forEach((message) => byId.set(message.id, message))
-    return sortByCreatedAt(Array.from(byId.values()))
-  }
+  const mergeMessages = useCallback(
+    (current: Message[], incoming: Message[]) => {
+      const byId = new Map<string, Message>()
+      current.forEach((message) => byId.set(message.id, message))
+      incoming.forEach((message) => byId.set(message.id, message))
+      return sortByCreatedAt(Array.from(byId.values()))
+    },
+    [sortByCreatedAt],
+  )
+
+  const revokeObjectUrl = useCallback((url?: string) => {
+    if (!url?.startsWith('blob:')) return
+    URL.revokeObjectURL(url)
+  }, [])
 
   const updateMessageStatus = useCallback(
     (clientId: string, status: Message['sendStatus'], errorText?: string) => {
@@ -113,11 +124,13 @@ export function ChatPage({ onOpenAdmin }: ChatPageProps) {
   const replaceLocalMessage = useCallback(
     (clientId: string, serverMessage: Message) => {
       setMessages((prev) => {
+        const local = prev.find((msg) => msg.clientId === clientId)
+        revokeObjectUrl(local?.mediaUrl)
         const withoutLocal = prev.filter((msg) => msg.clientId !== clientId)
         return mergeMessages(withoutLocal, [{ ...serverMessage, sendStatus: 'sent' }])
       })
     },
-    [],
+    [mergeMessages, revokeObjectUrl],
   )
 
   const enqueueTask = useCallback((task: OutboxTask) => {
@@ -258,7 +271,10 @@ export function ChatPage({ onOpenAdmin }: ChatPageProps) {
 
   useEffect(() => {
     if (!activeId || locked) {
-      setMessages([])
+      setMessages((prev) => {
+        prev.forEach((msg) => revokeObjectUrl(msg.mediaUrl))
+        return []
+      })
       setLoadingMessages(false)
       setTypingLabel(null)
       return
@@ -285,7 +301,7 @@ export function ChatPage({ onOpenAdmin }: ChatPageProps) {
       cancelled = true
       clearInterval(interval)
     }
-  }, [activeId, locked])
+  }, [activeId, locked, mergeMessages, revokeObjectUrl])
 
   async function loadMoreConversations() {
     if (loadingMoreConversations || !conversationsHasMore) return
@@ -322,7 +338,7 @@ export function ChatPage({ onOpenAdmin }: ChatPageProps) {
       setTypingLabel(null)
 
       if (message.senderId !== user?.id) {
-        const participantName = activeConversation?.participant?.displayName ?? 'Wellness Session'
+        const participantName = activeParticipantName ?? 'Wellness Session'
         void showMessageNotification(`New message from ${participantName}`, messagePreview(message))
       }
 
@@ -337,7 +353,10 @@ export function ChatPage({ onOpenAdmin }: ChatPageProps) {
     const onConversationDeleted = ({ conversationId }: { conversationId: string }) => {
       if (conversationId === activeId) {
         setActiveId(null)
-        setMessages([])
+        setMessages((prev) => {
+          prev.forEach((msg) => revokeObjectUrl(msg.mediaUrl))
+          return []
+        })
       }
       void loadConversations()
     }
@@ -362,7 +381,7 @@ export function ChatPage({ onOpenAdmin }: ChatPageProps) {
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
       pusher.unsubscribe(conversationChannel(activeId))
     }
-  }, [activeId, locked, loadConversations, user?.id])
+  }, [activeId, activeParticipantName, locked, loadConversations, revokeObjectUrl, user?.id])
 
   async function handleSendText(content: string) {
     if (!activeId) return
@@ -460,7 +479,10 @@ export function ChatPage({ onOpenAdmin }: ChatPageProps) {
     await chatApi.deleteConversation(conversationId)
     if (activeId === conversationId) {
       setActiveId(null)
-      setMessages([])
+      setMessages((prev) => {
+        prev.forEach((msg) => revokeObjectUrl(msg.mediaUrl))
+        return []
+      })
     }
     await loadConversations()
   }
@@ -480,6 +502,8 @@ export function ChatPage({ onOpenAdmin }: ChatPageProps) {
       if (pendingDelete.kind === 'conversation') {
         await handleDeleteConversation(pendingDelete.id)
       } else if (activeId) {
+        const maybeLocal = messages.find((m) => m.id === pendingDelete.messageId)
+        revokeObjectUrl(maybeLocal?.mediaUrl)
         await chatApi.deleteMessage(activeId, pendingDelete.messageId)
         setMessages((prev) => prev.filter((m) => m.id !== pendingDelete.messageId))
         await loadConversations()

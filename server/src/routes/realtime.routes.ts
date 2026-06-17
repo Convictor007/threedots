@@ -3,7 +3,6 @@ import type { AuthRequest } from '../middleware/auth.middleware.js'
 import { requireAuth } from '../middleware/auth.middleware.js'
 import { db } from '../db/client.js'
 import {
-  conversationChannel,
   getPusherServer,
   PRESENCE_USERS_CHANNEL,
 } from '../lib/realtime.js'
