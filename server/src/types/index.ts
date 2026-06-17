@@ -5,6 +5,8 @@ export interface User {
   username: string
   displayName: string
   avatarColor: string
+  avatarUrl?: string
+  lastSeenAt?: string
 }
 
 export interface UserRecord extends User {

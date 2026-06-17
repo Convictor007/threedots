@@ -4,6 +4,24 @@ import { db } from '../db/client.js'
 import { conversationChannel, getPusherServer } from '../lib/realtime.js'
 import type { Message, SendMessageInput } from '../types/index.js'
 
+function mapParticipant(row: {
+  participant_id: string
+  username: string
+  display_name: string
+  avatar_color: string
+  avatar_url: string | null
+  last_seen_at: Date | null
+}) {
+  return {
+    id: row.participant_id,
+    username: row.username,
+    displayName: row.display_name,
+    avatarColor: row.avatar_color,
+    avatarUrl: row.avatar_url ?? undefined,
+    lastSeenAt: row.last_seen_at?.toISOString(),
+  }
+}
+
 function previewForMessage(input: SendMessageInput): string {
   if (input.type === 'image') return input.content?.trim() || 'Photo'
   if (input.type === 'voice') return 'Voice message'
@@ -45,7 +63,8 @@ async function canAccessConversation(conversationId: string, userId: string) {
   return (result.rowCount ?? 0) > 0
 }
 
-export async function listConversations(userId: string) {
+export async function listConversations(userId: string, page: number, limit: number) {
+  const offset = (page - 1) * limit
   const result = await db.query<{
     conversation_id: string
     updated_at: Date
@@ -53,6 +72,8 @@ export async function listConversations(userId: string) {
     username: string
     display_name: string
     avatar_color: string
+    avatar_url: string | null
+    last_seen_at: Date | null
     message_id: string | null
     sender_id: string | null
     type: 'text' | 'image' | 'voice' | null
@@ -68,6 +89,8 @@ export async function listConversations(userId: string) {
        u.username,
        u.display_name,
        u.avatar_color,
+       u.avatar_url,
+       u.last_seen_at,
        m.id as message_id,
        m.sender_id,
        m.type,
@@ -89,19 +112,19 @@ export async function listConversations(userId: string) {
        order by created_at desc
        limit 1
      ) m on true
-     order by c.updated_at desc`,
-    [userId],
+     order by c.updated_at desc
+     limit $2
+     offset $3`,
+    [userId, limit + 1, offset],
   )
 
+  const hasMore = result.rows.length > limit
+  const rows = hasMore ? result.rows.slice(0, limit) : result.rows
+
   return {
-    conversations: result.rows.map((row) => ({
+    conversations: rows.map((row) => ({
       id: row.conversation_id,
-      participant: {
-        id: row.participant_id,
-        username: row.username,
-        displayName: row.display_name,
-        avatarColor: row.avatar_color,
-      },
+      participant: mapParticipant(row),
       lastMessage: row.message_id
         ? {
             id: row.message_id,
@@ -116,6 +139,9 @@ export async function listConversations(userId: string) {
         : null,
       updatedAt: row.updated_at.toISOString(),
     })),
+    page,
+    limit,
+    hasMore,
   }
 }
 
@@ -125,10 +151,12 @@ export async function listUsers(currentUserId: string) {
     username: string
     display_name: string
     avatar_color: string
+    avatar_url: string | null
+    last_seen_at: Date | null
   }>(
-    `select id, username, display_name, avatar_color
+    `select id, username, display_name, avatar_color, avatar_url, last_seen_at
      from users
-     where id <> $1
+     where id <> $1 and role <> 'admin'
      order by display_name asc`,
     [currentUserId],
   )
@@ -139,23 +167,40 @@ export async function listUsers(currentUserId: string) {
       username: row.username,
       displayName: row.display_name,
       avatarColor: row.avatar_color,
+      avatarUrl: row.avatar_url ?? undefined,
+      lastSeenAt: row.last_seen_at?.toISOString(),
     })),
   }
 }
 
-export async function getMessages(conversationId: string, userId: string) {
+export async function getMessages(conversationId: string, userId: string, page: number, limit: number) {
   if (!(await canAccessConversation(conversationId, userId))) {
     return { error: 'Conversation not found' as const }
   }
 
+  const offset = (page - 1) * limit
   const result = await db.query<MessageRow>(
     `select id, conversation_id, sender_id, type, content, media_url, duration, created_at
-     from messages
-     where conversation_id = $1
+     from (
+       select id, conversation_id, sender_id, type, content, media_url, duration, created_at
+       from messages
+       where conversation_id = $1
+       order by created_at desc
+       limit $2
+       offset $3
+     ) recent
      order by created_at asc`,
-    [conversationId],
+    [conversationId, limit + 1, offset],
   )
-  return { messages: result.rows.map(mapMessage) }
+
+  const hasMore = result.rows.length > limit
+  const rows = hasMore ? result.rows.slice(0, limit) : result.rows
+  return {
+    messages: rows.map(mapMessage),
+    page,
+    limit,
+    hasMore,
+  }
 }
 
 export async function sendMessage(conversationId: string, userId: string, input: SendMessageInput) {
@@ -209,11 +254,21 @@ export async function startConversation(userId: string, otherUserId: string) {
     username: string
     display_name: string
     avatar_color: string
-  }>('select id, username, display_name, avatar_color from users where id = $1 limit 1', [otherUserId])
+    avatar_url: string | null
+    last_seen_at: Date | null
+    role: string
+  }>(
+    'select id, username, display_name, avatar_color, avatar_url, last_seen_at, role from users where id = $1 limit 1',
+    [otherUserId],
+  )
 
   const other = otherUser.rows[0]
   if (!other) {
     return { error: 'User not found' as const }
+  }
+
+  if (other.role === 'admin') {
+    return { error: 'User not available for messaging' as const }
   }
 
   const existing = await db.query<{ conversation_id: string }>(
@@ -246,6 +301,8 @@ export async function startConversation(userId: string, otherUserId: string) {
         username: other.username,
         displayName: other.display_name,
         avatarColor: other.avatar_color,
+        avatarUrl: other.avatar_url ?? undefined,
+        lastSeenAt: other.last_seen_at?.toISOString(),
       },
       lastMessage: null,
       updatedAt: new Date().toISOString(),
@@ -316,6 +373,28 @@ export async function deleteMessage(conversationId: string, messageId: string, u
     await pusher.trigger(conversationChannel(conversationId), 'message:deleted', {
       conversationId,
       messageId,
+    })
+  }
+
+  return { success: true as const }
+}
+
+export async function sendTyping(conversationId: string, userId: string) {
+  if (!(await canAccessConversation(conversationId, userId))) {
+    return { error: 'Conversation not found' as const }
+  }
+
+  const userResult = await db.query<{ display_name: string }>(
+    'select display_name from users where id = $1 limit 1',
+    [userId],
+  )
+  const displayName = userResult.rows[0]?.display_name ?? 'Someone'
+
+  const pusher = getPusherServer()
+  if (pusher) {
+    await pusher.trigger(conversationChannel(conversationId), 'typing', {
+      userId,
+      displayName,
     })
   }
 

@@ -1,0 +1,44 @@
+.loading-spinner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.loading-spinner__ring {
+  display: block;
+  border-radius: 50%;
+  border-style: solid;
+  border-color: var(--color-border);
+  border-top-color: var(--color-primary);
+  animation: loading-spinner-spin 0.75s linear infinite;
+}
+
+.loading-spinner--sm .loading-spinner__ring {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+.loading-spinner--md .loading-spinner__ring {
+  width: 24px;
+  height: 24px;
+  border-width: 3px;
+}
+
+.loading-spinner--lg .loading-spinner__ring {
+  width: 40px;
+  height: 40px;
+  border-width: 3px;
+}
+
+.loading-spinner__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+@keyframes loading-spinner-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

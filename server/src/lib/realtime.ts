@@ -28,3 +28,5 @@ export function getPusherServer() {
 export function conversationChannel(conversationId: string) {
   return `private-conversation-${conversationId}`
 }
+
+export const PRESENCE_USERS_CHANNEL = 'presence-users'

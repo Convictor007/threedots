@@ -53,6 +53,67 @@ router.get('/me', requireAuth, async (req: AuthRequest, res) => {
   res.json(result)
 })
 
+router.patch('/profile', requireAuth, async (req: AuthRequest, res) => {
+  const body = req.body as {
+    displayName?: string
+    avatarColor?: string
+    avatarUrl?: string | null
+  }
+
+  const result = await authService.updateProfile(req.userId!, body)
+  if ('error' in result) {
+    res.status(400).json({ error: result.error })
+    return
+  }
+
+  res.json(result)
+})
+
+router.patch('/username', requireAuth, async (req: AuthRequest, res) => {
+  const { username, currentPassword } = req.body as {
+    username?: string
+    currentPassword?: string
+  }
+
+  if (!username || !currentPassword) {
+    res.status(400).json({ error: 'Username and current password are required' })
+    return
+  }
+
+  const result = await authService.updateUsername(req.userId!, username, currentPassword)
+  if ('error' in result) {
+    res.status(400).json({ error: result.error })
+    return
+  }
+
+  res.json(result)
+})
+
+router.patch('/password', requireAuth, async (req: AuthRequest, res) => {
+  const { currentPassword, newPassword } = req.body as {
+    currentPassword?: string
+    newPassword?: string
+  }
+
+  if (!currentPassword || !newPassword) {
+    res.status(400).json({ error: 'Current and new password are required' })
+    return
+  }
+
+  const result = await authService.updatePassword(req.userId!, currentPassword, newPassword)
+  if ('error' in result) {
+    res.status(400).json({ error: result.error })
+    return
+  }
+
+  res.json(result)
+})
+
+router.post('/heartbeat', requireAuth, async (req: AuthRequest, res) => {
+  await authService.touchLastSeen(req.userId!)
+  res.json({ success: true })
+})
+
 router.post('/logout', requireAuth, async (req: AuthRequest, res) => {
   const header = req.headers.authorization
   const token = header?.startsWith('Bearer ') ? header.slice(7) : undefined

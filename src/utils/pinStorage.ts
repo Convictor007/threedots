@@ -10,8 +10,17 @@ async function hashPin(pin: string): Promise<string> {
     .join('')
 }
 
+export function hasPinConfigured(): boolean {
+  return !!localStorage.getItem(PIN_HASH_KEY)
+}
+
+export function isAutoLockEnabled(): boolean {
+  return localStorage.getItem(PIN_ENABLED_KEY) === 'true' && hasPinConfigured()
+}
+
+/** @deprecated Use isAutoLockEnabled */
 export function isPinEnabled(): boolean {
-  return localStorage.getItem(PIN_ENABLED_KEY) === 'true' && !!localStorage.getItem(PIN_HASH_KEY)
+  return isAutoLockEnabled()
 }
 
 export function isSessionUnlocked(): boolean {
@@ -26,9 +35,23 @@ export function clearSessionUnlock(): void {
   sessionStorage.removeItem(UNLOCK_KEY)
 }
 
+export function setAutoLockEnabled(enabled: boolean): void {
+  if (enabled && !hasPinConfigured()) {
+    throw new Error('Set a PIN first')
+  }
+  localStorage.setItem(PIN_ENABLED_KEY, enabled ? 'true' : 'false')
+  if (!enabled) {
+    clearSessionUnlock()
+  }
+}
+
+export function disableAutoLock(): void {
+  setAutoLockEnabled(false)
+}
+
 export async function setPin(pin: string): Promise<void> {
-  if (!/^\d{4,6}$/.test(pin)) {
-    throw new Error('PIN must be 4–6 digits')
+  if (!/^\d{4}$/.test(pin)) {
+    throw new Error('PIN must be exactly 4 digits')
   }
   const hash = await hashPin(pin)
   localStorage.setItem(PIN_HASH_KEY, hash)
@@ -50,5 +73,5 @@ export function removePin(): void {
 }
 
 export function shouldShowPinLock(): boolean {
-  return isPinEnabled() && !isSessionUnlocked()
+  return isAutoLockEnabled() && !isSessionUnlocked()
 }

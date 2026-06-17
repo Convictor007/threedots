@@ -2,7 +2,12 @@ import { Router } from 'express'
 import type { AuthRequest } from '../middleware/auth.middleware.js'
 import { requireAuth } from '../middleware/auth.middleware.js'
 import { db } from '../db/client.js'
-import { getPusherServer } from '../lib/realtime.js'
+import {
+  conversationChannel,
+  getPusherServer,
+  PRESENCE_USERS_CHANNEL,
+} from '../lib/realtime.js'
+import * as authService from '../services/auth.service.js'
 
 const router = Router()
 
@@ -20,6 +25,24 @@ router.post('/auth', requireAuth, async (req: AuthRequest, res) => {
 
   if (!socketId || !channelName) {
     res.status(400).json({ error: 'socket_id and channel_name are required' })
+    return
+  }
+
+  if (channelName === PRESENCE_USERS_CHANNEL) {
+    const me = await authService.getMe(req.userId!)
+    if ('error' in me) {
+      res.status(404).json({ error: me.error })
+      return
+    }
+
+    const auth = pusher.authorizeChannel(socketId, channelName, {
+      user_id: req.userId!,
+      user_info: {
+        displayName: me.user.displayName,
+        avatarColor: me.user.avatarColor,
+      },
+    })
+    res.send(auth)
     return
   }
 

@@ -9,6 +9,7 @@ import {
 } from 'react'
 import { authApi } from '../api/auth.api'
 import { setToken } from '../api/client'
+import { clearChatCache } from '../lib/chatCache'
 import type { User } from '../types'
 
 interface AuthContextValue {
@@ -17,6 +18,8 @@ interface AuthContextValue {
   login: (username: string, password: string) => Promise<void>
   register: (username: string, displayName: string, password: string) => Promise<void>
   logout: () => Promise<void>
+  setUser: (user: User) => void
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -42,6 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (username: string, password: string) => {
     const { user, token } = await authApi.login(username, password)
     setToken(token)
+    clearChatCache()
     setUser(user)
   }, [])
 
@@ -49,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (username: string, displayName: string, password: string) => {
       const { user, token } = await authApi.register(username, displayName, password)
       setToken(token)
+      clearChatCache()
       setUser(user)
     },
     [],
@@ -61,12 +66,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // ignore logout errors
     }
     setToken(null)
+    clearChatCache()
     setUser(null)
   }, [])
 
+  const refreshUser = useCallback(async () => {
+    const { user: next } = await authApi.me()
+    setUser(next)
+  }, [])
+
   const value = useMemo(
-    () => ({ user, loading, login, register, logout }),
-    [user, loading, login, register, logout],
+    () => ({ user, loading, login, register, logout, setUser, refreshUser }),
+    [user, loading, login, register, logout, refreshUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

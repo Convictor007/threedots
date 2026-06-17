@@ -1,8 +1,30 @@
+import { useState } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { PinLockProvider } from './context/PinLockContext'
+import { PresenceProvider } from './context/PresenceContext'
+import { ThemeProvider } from './context/ThemeContext'
 import { LoginPage } from './pages/LoginPage'
 import { ChatPage } from './pages/ChatPage'
+import { AdminPage } from './pages/AdminPage'
+import { LoadingSpinner } from './components/common/LoadingSpinner'
 import './App.css'
+
+type AppView = 'chat' | 'admin'
+
+function AuthenticatedApp() {
+  const { user } = useAuth()
+  const [view, setView] = useState<AppView>('chat')
+
+  if (user?.role === 'admin' && view === 'admin') {
+    return <AdminPage onBack={() => setView('chat')} />
+  }
+
+  return (
+    <ChatPage
+      onOpenAdmin={user?.role === 'admin' ? () => setView('admin') : undefined}
+    />
+  )
+}
 
 function AppContent() {
   const { user, loading } = useAuth()
@@ -10,24 +32,31 @@ function AppContent() {
   if (loading) {
     return (
       <div className="app-loading">
-        <div className="app-loading__spinner" />
-        <p>Loading your wellness dashboard…</p>
+        <LoadingSpinner size="lg" label="Loading your wellness dashboard…" />
       </div>
     )
   }
 
   return (
     <PinLockProvider active={!!user}>
-      {user ? <ChatPage /> : <LoginPage />}
+      {user ? (
+        <PresenceProvider>
+          <AuthenticatedApp />
+        </PresenceProvider>
+      ) : (
+        <LoginPage />
+      )}
     </PinLockProvider>
   )
 }
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
 

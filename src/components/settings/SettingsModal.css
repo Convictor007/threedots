@@ -1,7 +1,7 @@
 .settings-modal {
   position: fixed;
   inset: 0;
-  background: rgba(27, 67, 50, 0.5);
+  background: var(--color-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -10,11 +10,17 @@
 }
 
 .settings-modal__content {
-  background: #fff;
+  background: var(--color-surface);
   border-radius: 16px;
   padding: 24px;
   width: 100%;
   max-width: 420px;
+}
+
+.settings-modal__content--wide {
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .settings-modal__header {
@@ -27,26 +33,115 @@
 .settings-modal__header h2 {
   margin: 0;
   font-size: 20px;
-  color: #1b4332;
+  color: var(--color-text);
 }
 
 .settings-modal__close {
   width: 32px;
   height: 32px;
   border: none;
-  background: #d8f3dc;
+  background: var(--color-surface-accent);
   border-radius: 50%;
   font-size: 22px;
   line-height: 1;
-  color: #2d6a4f;
+  color: var(--color-primary);
   cursor: pointer;
+}
+
+.settings-modal__tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.settings-modal__tab {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface-muted);
+  color: var(--color-primary);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.settings-modal__tab--active {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
 }
 
 .settings-modal__desc {
   margin: 0 0 20px;
   font-size: 14px;
-  color: #52796f;
+  color: var(--color-text-muted);
   line-height: 1.5;
+}
+
+.settings-modal__desc--inline {
+  margin: 4px 0 0;
+}
+
+.settings-modal__hint {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.settings-toggle-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.settings-toggle-row__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-toggle-row__label {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.settings-switch {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 999px;
+  background: var(--color-border);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s;
+}
+
+.settings-switch--on {
+  background: var(--color-primary);
+}
+
+.settings-switch__thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+
+.settings-switch--on .settings-switch__thumb {
+  transform: translateX(20px);
 }
 
 .settings-modal__form {
@@ -64,37 +159,39 @@
 .settings-field label {
   font-size: 13px;
   font-weight: 600;
-  color: #1b4332;
+  color: var(--color-text);
 }
 
 .settings-field input {
   padding: 10px 14px;
-  border: 1px solid #b7e4c7;
+  background: var(--color-input-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 15px;
   outline: none;
 }
 
 .settings-field input:focus {
-  border-color: #2d6a4f;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 2px rgba(45, 106, 79, 0.15);
 }
 
 .settings-error {
-  color: #d00000;
+  color: var(--color-danger);
   font-size: 13px;
   margin: 0;
 }
 
 .settings-success {
-  color: #2d6a4f;
+  color: var(--color-primary);
   font-size: 13px;
   margin: 0;
 }
 
 .settings-save {
   padding: 11px;
-  background: #2d6a4f;
+  background: var(--color-primary);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -104,7 +201,7 @@
 }
 
 .settings-save:hover:not(:disabled) {
-  background: #1b4332;
+  background: var(--color-primary-hover);
 }
 
 .settings-save:disabled {
@@ -117,8 +214,8 @@
   width: 100%;
   padding: 10px;
   background: transparent;
-  border: 1px solid #d00000;
-  color: #d00000;
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
   border-radius: 8px;
   font-size: 14px;
   cursor: pointer;
@@ -126,4 +223,16 @@
 
 .settings-remove:hover {
   background: #fff5f5;
+}
+
+.settings-link-btn {
+  margin-bottom: 16px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
 }

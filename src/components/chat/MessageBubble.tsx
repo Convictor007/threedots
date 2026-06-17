@@ -6,6 +6,7 @@ interface MessageBubbleProps {
   message: Message
   isOwn: boolean
   onDelete?: (messageId: string) => void
+  onRetry?: (messageId: string) => void
 }
 
 function formatTime(iso: string) {
@@ -18,9 +19,12 @@ function formatVoiceDuration(seconds: number) {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
-export function MessageBubble({ message, isOwn, onDelete }: MessageBubbleProps) {
+export function MessageBubble({ message, isOwn, onDelete, onRetry }: MessageBubbleProps) {
   const type = message.type ?? 'text'
   const isMedia = type === 'image' || type === 'voice'
+  const sendStatus = message.sendStatus ?? 'sent'
+  const isFailed = sendStatus === 'failed'
+  const isPending = sendStatus === 'queued' || sendStatus === 'sending'
 
   return (
     <div className={`message-row ${isOwn ? 'message-row--own' : ''}`}>
@@ -52,7 +56,30 @@ export function MessageBubble({ message, isOwn, onDelete }: MessageBubbleProps) 
 
         <div className="message-bubble__footer">
           <span className="message-time">{formatTime(message.createdAt)}</span>
-          {isOwn && onDelete && (
+          {isOwn && isPending && (
+            <span className="message-status" aria-live="polite">
+              {sendStatus === 'queued' ? 'Queued' : 'Sending...'}
+            </span>
+          )}
+          {isOwn && isFailed && (
+            <>
+              <span className="message-status message-status--failed" title={message.errorText || 'Send failed'}>
+                Failed
+              </span>
+              {onRetry && (
+                <button
+                  type="button"
+                  className="message-retry-btn"
+                  onClick={() => onRetry(message.id)}
+                  aria-label="Retry sending message"
+                  title="Retry"
+                >
+                  Retry
+                </button>
+              )}
+            </>
+          )}
+          {isOwn && onDelete && !isPending && (
             <button
               type="button"
               className="message-delete-btn"

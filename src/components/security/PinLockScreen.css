@@ -53,25 +53,48 @@
   border-color: #2d6a4f;
 }
 
-.pin-lock__input {
-  width: 100%;
-  max-width: 220px;
-  margin: 0 auto 12px;
-  display: block;
-  padding: 10px 14px;
-  border: 1px solid #b7e4c7;
-  border-radius: 10px;
-  background: #f8fdf9;
-  text-align: center;
-  font-size: 18px;
-  letter-spacing: 6px;
-  color: #1b4332;
-  outline: none;
+.pin-lock__keypad {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px auto 16px;
+  max-width: 260px;
 }
 
-.pin-lock__input:focus {
+.pin-lock__keypad-row {
+  display: flex;
+  gap: 8px;
+}
+
+.pin-lock__key {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 999px;
+  border: 1px solid #b7e4c7;
+  background: #f8fdf9;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1b4332;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.05s;
+}
+
+.pin-lock__key:hover:not(:disabled) {
+  background: #d8f3dc;
   border-color: #2d6a4f;
-  box-shadow: 0 0 0 2px rgba(45, 106, 79, 0.15);
+}
+
+.pin-lock__key:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.pin-lock__key:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pin-lock__key--secondary {
+  background: #ffffff;
 }
 
 .pin-lock__error {

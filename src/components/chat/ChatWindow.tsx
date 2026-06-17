@@ -1,4 +1,6 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
+import type { UIEvent } from 'react'
+import { formatLastSeen } from '../../context/PresenceContext'
 import { BRAND } from '../../constants/brand'
 import type { ConversationPreview, Message } from '../../types'
 import { WellnessLogo } from '../brand/WellnessLogo'
@@ -6,19 +8,27 @@ import { TrashIcon } from '../icons/TrashIcon'
 import { Avatar } from './Avatar'
 import { MessageBubble } from './MessageBubble'
 import { MessageInput } from './MessageInput'
+import { LoadingSpinner } from '../common/LoadingSpinner'
 import './ChatWindow.css'
 
 interface ChatWindowProps {
   conversation: ConversationPreview | null
   messages: Message[]
   currentUserId: string
+  participantOnline?: boolean
+  typingLabel?: string | null
   onBackToList?: () => void
   onSendText: (content: string) => void
   onSendImage: (file: File) => void
   onSendVoice: (blob: Blob, duration: number) => void
-  onDeleteConversation?: (conversationId: string) => void
+  onTyping?: () => void
+  onRequestDeleteConversation?: () => void
   onDeleteMessage?: (messageId: string) => void
+  onRetryMessage?: (messageId: string) => void
   loadingMessages?: boolean
+  hasMoreMessages?: boolean
+  loadingMoreMessages?: boolean
+  onLoadMoreMessages?: () => void
   sending?: boolean
   busyLabel?: string | null
 }
@@ -27,21 +37,40 @@ export function ChatWindow({
   conversation,
   messages,
   currentUserId,
+  participantOnline,
+  typingLabel,
   onBackToList,
   onSendText,
   onSendImage,
   onSendVoice,
-  onDeleteConversation,
+  onTyping,
+  onRequestDeleteConversation,
   onDeleteMessage,
+  onRetryMessage,
   loadingMessages,
+  hasMoreMessages,
+  loadingMoreMessages,
+  onLoadMoreMessages,
   sending,
   busyLabel,
 }: ChatWindowProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
+  const messagesRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, typingLabel])
+
+  const handleMessagesScroll = useCallback(
+    (event: UIEvent<HTMLDivElement>) => {
+      if (!hasMoreMessages || loadingMoreMessages || !onLoadMoreMessages) return
+      const target = event.currentTarget
+      if (target.scrollTop <= 80) {
+        onLoadMoreMessages()
+      }
+    },
+    [hasMoreMessages, loadingMoreMessages, onLoadMoreMessages],
+  )
 
   if (!conversation?.participant) {
     return (
@@ -55,14 +84,17 @@ export function ChatWindow({
     )
   }
 
-  const { participant, id: conversationId } = conversation
+  const { participant } = conversation
 
   function handleDeleteSession() {
-    if (!onDeleteConversation || !window.confirm(`Delete this wellness session with ${participant.displayName}?`)) {
-      return
-    }
-    onDeleteConversation(conversationId)
+    onRequestDeleteConversation?.()
   }
+
+  const statusText = typingLabel
+    ? typingLabel
+    : participantOnline
+      ? 'Online'
+      : formatLastSeen(participant.lastSeenAt)
 
   return (
     <div className="chat-window">
@@ -79,12 +111,20 @@ export function ChatWindow({
             </svg>
           </button>
         )}
-        <Avatar user={participant} size="sm" />
+        <Avatar user={participant} size="sm" online={participantOnline} />
         <div className="chat-window__header-info">
           <h3>{participant.displayName}</h3>
-          <span>Licensed Wellness Counselor</span>
+          {loadingMessages ? (
+            <span className="chat-window__status chat-window__status--loading">
+              <LoadingSpinner size="sm" />
+            </span>
+          ) : (
+            <span className={typingLabel ? 'chat-window__status chat-window__status--typing' : 'chat-window__status'}>
+              {statusText}
+            </span>
+          )}
         </div>
-        {onDeleteConversation && (
+        {onRequestDeleteConversation && (
           <button
             type="button"
             className="chat-window__delete-btn"
@@ -97,10 +137,10 @@ export function ChatWindow({
         )}
       </header>
 
-      <div className="chat-window__messages">
-        {loadingMessages && (
-          <div className="chat-window__loading" role="status" aria-live="polite">
-            Loading messages...
+      <div ref={messagesRef} className="chat-window__messages" onScroll={handleMessagesScroll}>
+        {loadingMoreMessages && (
+          <div className="chat-window__paging-state" role="status" aria-live="polite">
+            Loading older messages...
           </div>
         )}
         {messages.map((msg) => (
@@ -109,8 +149,19 @@ export function ChatWindow({
             message={msg}
             isOwn={msg.senderId === currentUserId}
             onDelete={onDeleteMessage}
+            onRetry={onRetryMessage}
           />
         ))}
+        {typingLabel && (
+          <div className="chat-window__typing" role="status" aria-live="polite">
+            <span className="chat-window__typing-dots" aria-hidden>
+              <span />
+              <span />
+              <span />
+            </span>
+            <span>{typingLabel}</span>
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
 
@@ -118,6 +169,7 @@ export function ChatWindow({
         onSendText={onSendText}
         onSendImage={onSendImage}
         onSendVoice={onSendVoice}
+        onTyping={onTyping}
         disabled={sending}
         busyLabel={busyLabel}
       />

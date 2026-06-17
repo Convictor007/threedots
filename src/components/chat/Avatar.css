@@ -1,3 +1,23 @@
+.avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.avatar-wrap--sm {
+  width: 32px;
+  height: 32px;
+}
+
+.avatar-wrap--md {
+  width: 40px;
+  height: 40px;
+}
+
+.avatar-wrap--lg {
+  width: 56px;
+  height: 56px;
+}
+
 .avatar {
   border-radius: 50%;
   display: flex;
@@ -6,22 +26,48 @@
   color: #fff;
   font-weight: 600;
   flex-shrink: 0;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+.avatar__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-status {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+.avatar-wrap--sm .avatar-status {
+  width: 8px;
+  height: 8px;
+}
+
+.avatar-status--online {
+  background: #52b788;
+}
+
+.avatar-status--offline {
+  background: #95a5a6;
 }
 
 .avatar--sm {
-  width: 32px;
-  height: 32px;
   font-size: 12px;
 }
 
 .avatar--md {
-  width: 40px;
-  height: 40px;
   font-size: 14px;
 }
 
 .avatar--lg {
-  width: 56px;
-  height: 56px;
   font-size: 18px;
 }

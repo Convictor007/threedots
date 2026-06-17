@@ -7,8 +7,16 @@ const router = Router()
 
 router.use(requireAuth)
 
+function parsePositiveInt(value: unknown, fallback: number) {
+  const num = Number(value)
+  if (!Number.isFinite(num) || num < 1) return fallback
+  return Math.floor(num)
+}
+
 router.get('/conversations', async (req: AuthRequest, res) => {
-  const result = await chatService.listConversations(req.userId!)
+  const page = parsePositiveInt(req.query.page, 1)
+  const limit = Math.min(parsePositiveInt(req.query.limit, 20), 100)
+  const result = await chatService.listConversations(req.userId!, page, limit)
   res.json(result)
 })
 
@@ -36,7 +44,9 @@ router.post('/conversations', async (req: AuthRequest, res) => {
 
 router.get('/conversations/:id/messages', async (req: AuthRequest, res) => {
   const conversationId = String(req.params.id)
-  const result = await chatService.getMessages(conversationId, req.userId!)
+  const page = parsePositiveInt(req.query.page, 1)
+  const limit = Math.min(parsePositiveInt(req.query.limit, 30), 100)
+  const result = await chatService.getMessages(conversationId, req.userId!, page, limit)
   if ('error' in result) {
     res.status(404).json({ error: result.error })
     return
@@ -66,6 +76,17 @@ router.post('/conversations/:id/messages', async (req: AuthRequest, res) => {
   }
 
   res.status(201).json(result)
+})
+
+router.post('/conversations/:id/typing', async (req: AuthRequest, res) => {
+  const conversationId = String(req.params.id)
+  const result = await chatService.sendTyping(conversationId, req.userId!)
+  if ('error' in result) {
+    res.status(404).json({ error: result.error })
+    return
+  }
+
+  res.json(result)
 })
 
 router.delete('/conversations/:id', async (req: AuthRequest, res) => {

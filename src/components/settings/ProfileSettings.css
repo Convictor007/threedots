@@ -1,0 +1,92 @@
+.profile-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profile-settings__hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.profile-settings__hero h3 {
+  margin: 0 0 4px;
+  color: var(--color-text);
+}
+
+.profile-settings__hero p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.profile-settings__file {
+  display: none;
+}
+
+.profile-settings__photo-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-settings__secondary {
+  padding: 8px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.profile-settings__secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.profile-settings__link {
+  border: none;
+  background: none;
+  color: var(--color-danger);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.profile-settings__section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+}
+
+.profile-settings__section h4 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 15px;
+}
+
+.settings-field__label {
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.profile-settings__colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-settings__color {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.profile-settings__color--active {
+  border-color: var(--color-text);
+  box-shadow: 0 0 0 2px var(--color-surface) inset;
+}

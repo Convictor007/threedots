@@ -9,7 +9,7 @@ import {
 } from 'react'
 import {
   clearSessionUnlock,
-  isPinEnabled,
+  isAutoLockEnabled,
   markSessionUnlocked,
   shouldShowPinLock,
   verifyPin,
@@ -26,10 +26,10 @@ const PinLockContext = createContext<PinLockContextValue | null>(null)
 
 export function PinLockProvider({ children, active }: { children: ReactNode; active: boolean }) {
   const [locked, setLocked] = useState(false)
-  const [pinEnabled, setPinEnabled] = useState(isPinEnabled)
+  const [pinEnabled, setPinEnabled] = useState(isAutoLockEnabled)
 
   const refreshLockState = useCallback(() => {
-    const enabled = isPinEnabled()
+    const enabled = isAutoLockEnabled()
     setPinEnabled(enabled)
     if (active && enabled) {
       setLocked(shouldShowPinLock())
@@ -46,14 +46,14 @@ export function PinLockProvider({ children, active }: { children: ReactNode; act
     if (!active) return
 
     function lockOnHide() {
-      if (document.hidden && isPinEnabled()) {
+      if (document.hidden && isAutoLockEnabled()) {
         clearSessionUnlock()
         setLocked(true)
       }
     }
 
     function lockOnPageHide() {
-      if (isPinEnabled()) {
+      if (isAutoLockEnabled()) {
         clearSessionUnlock()
       }
     }

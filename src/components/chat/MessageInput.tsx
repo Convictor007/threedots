@@ -7,6 +7,7 @@ interface MessageInputProps {
   onSendText: (content: string) => void
   onSendImage: (file: File) => void
   onSendVoice: (blob: Blob, duration: number) => void
+  onTyping?: () => void
   disabled?: boolean
   busyLabel?: string | null
 }
@@ -15,13 +16,23 @@ export function MessageInput({
   onSendText,
   onSendImage,
   onSendVoice,
+  onTyping,
   disabled,
   busyLabel,
 }: MessageInputProps) {
   const [text, setText] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
+  const lastTypingRef = useRef(0)
   const { isRecording, duration, error, startRecording, stopRecording, cancelRecording } =
     useVoiceRecorder()
+
+  function notifyTyping(isFirstCharacter: boolean) {
+    if (!onTyping || disabled || isRecording) return
+    const now = Date.now()
+    if (!isFirstCharacter && now - lastTypingRef.current < 1000) return
+    lastTypingRef.current = now
+    onTyping()
+  }
 
   function submitText() {
     const trimmed = text.trim()
@@ -39,6 +50,14 @@ export function MessageInput({
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       submitText()
+    }
+  }
+
+  function handleTextChange(value: string) {
+    const isFirstCharacter = value.trim().length === 1 && text.trim().length === 0
+    setText(value)
+    if (value.trim()) {
+      notifyTyping(isFirstCharacter)
     }
   }
 
@@ -120,7 +139,7 @@ export function MessageInput({
 
         <textarea
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => handleTextChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={BRAND.messagePlaceholder}
           rows={1}

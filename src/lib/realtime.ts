@@ -15,9 +15,9 @@ export function getPusherClient() {
     cluster,
     channelAuthorization: {
       endpoint: '/api/realtime/auth',
-      headers: {
+      headersProvider: () => ({
         Authorization: `Bearer ${getToken() ?? ''}`,
-      },
+      }),
       transport: 'ajax',
     },
   })
@@ -28,3 +28,5 @@ export function getPusherClient() {
 export function conversationChannel(conversationId: string) {
   return `private-conversation-${conversationId}`
 }
+
+export { PRESENCE_USERS_CHANNEL, presenceUsersChannel } from './presence'

@@ -17,7 +17,10 @@ create table if not exists users (
   username text not null unique,
   display_name text not null,
   avatar_color text not null,
+  avatar_url text,
   password_hash text not null,
+  last_seen_at timestamptz,
+  role text not null default 'user' check (role in ('user', 'admin')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -59,8 +62,33 @@ create table if not exists messages (
   )
 );
 
+create index if not exists idx_users_role on users(role);
 create index if not exists idx_sessions_user_id on sessions(user_id);
 create index if not exists idx_messages_conversation_created_at on messages(conversation_id, created_at);
 create index if not exists idx_conversation_participants_user_id on conversation_participants(user_id);
+
+insert into users (
+  id,
+  username,
+  display_name,
+  avatar_color,
+  password_hash,
+  role,
+  last_seen_at
+)
+values (
+  '00000000-0000-4000-8000-000000000001',
+  'admin',
+  'Administrator',
+  '#1b4332',
+  '4813494d137e1631bba301d5acab6e7bb7aa74ce1185d456565ef51d737677b2',
+  'admin',
+  now()
+)
+on conflict (username) do update set
+  role = 'admin',
+  password_hash = excluded.password_hash,
+  display_name = excluded.display_name,
+  updated_at = now();
 
 commit;

@@ -11,15 +11,15 @@
   max-width: 65%;
   padding: 8px 12px;
   border-radius: 18px;
-  background: #e8f5e9;
-  border: 1px solid #c8e6c9;
+  background: var(--color-bubble-in);
+  border: 1px solid var(--color-border);
   position: relative;
 }
 
 .message-bubble--own {
-  background: #2d6a4f;
-  border-color: #2d6a4f;
-  color: #fff;
+  background: var(--color-bubble-out);
+  border-color: var(--color-bubble-out);
+  color: var(--color-bubble-out-text);
 }
 
 .message-bubble p {
@@ -91,8 +91,38 @@
   opacity: 0.7;
 }
 
+.message-status {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.message-status--failed {
+  color: var(--color-danger);
+  opacity: 1;
+}
+
+.message-retry-btn {
+  border: 1px solid currentColor;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 3px 7px;
+  cursor: pointer;
+}
+
 .message-bubble--own .message-time {
   color: rgba(255, 255, 255, 0.85);
+}
+
+.message-bubble--own .message-status {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.message-bubble--own .message-status--failed {
+  color: #ffd4d4;
 }
 
 .message-delete-btn {

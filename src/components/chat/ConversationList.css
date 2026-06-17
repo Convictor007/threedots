@@ -1,10 +1,10 @@
 .conversation-list {
   width: 360px;
   min-width: 280px;
-  border-right: 1px solid #b7e4c7;
+  border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: var(--color-surface);
 }
 
 .conversation-list__header {
@@ -12,14 +12,14 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid #b7e4c7;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .conversation-list__header h2 {
   margin: 0;
   font-size: 20px;
   font-weight: 700;
-  color: #1b4332;
+  color: var(--color-text);
 }
 
 .new-chat-btn {
@@ -27,8 +27,8 @@
   height: 36px;
   border: none;
   border-radius: 50%;
-  background: #d8f3dc;
-  color: #2d6a4f;
+  background: var(--color-surface-accent);
+  color: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -37,7 +37,7 @@
 }
 
 .new-chat-btn:hover {
-  background: #b7e4c7;
+  background: var(--color-surface-hover);
 }
 
 .conversation-list__items {
@@ -45,9 +45,16 @@
   overflow-y: auto;
 }
 
+.conversation-list__paging-state {
+  padding: 10px 14px 14px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
 .conversation-list__empty {
   padding: 24px 20px;
-  color: #52796f;
+  color: var(--color-text-muted);
   font-size: 14px;
   text-align: center;
   line-height: 1.5;
@@ -61,15 +68,12 @@
 }
 
 .conversation-item:hover {
-  background: #d8f3dc;
+  background: var(--color-surface-accent);
 }
 
-.conversation-item--active {
-  background: #b7e4c7;
-}
-
+.conversation-item--active,
 .conversation-item--active:hover {
-  background: #b7e4c7;
+  background: var(--color-surface-hover);
 }
 
 .conversation-item__main {
@@ -95,7 +99,7 @@
   border: none;
   border-radius: 50%;
   background: transparent;
-  color: #d00000;
+  color: var(--color-danger);
   cursor: pointer;
   opacity: 0;
   flex-shrink: 0;
@@ -127,7 +131,7 @@
 .conversation-item__name {
   font-weight: 600;
   font-size: 15px;
-  color: #1b4332;
+  color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -135,14 +139,14 @@
 
 .conversation-item__time {
   font-size: 12px;
-  color: #52796f;
+  color: var(--color-text-muted);
   flex-shrink: 0;
 }
 
 .conversation-item__preview {
   margin: 2px 0 0;
   font-size: 13px;
-  color: #52796f;
+  color: var(--color-text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

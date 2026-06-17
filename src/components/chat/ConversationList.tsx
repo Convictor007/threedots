@@ -1,4 +1,5 @@
-import type { MouseEvent } from 'react'
+import { useCallback } from 'react'
+import type { MouseEvent, UIEvent } from 'react'
 import { BRAND } from '../../constants/brand'
 import type { ConversationPreview } from '../../types'
 import { messagePreview } from '../../types'
@@ -11,7 +12,11 @@ interface ConversationListProps {
   activeId: string | null
   onSelect: (id: string) => void
   onNewChat: () => void
-  onDelete: (id: string) => void
+  onRequestDelete: (id: string, displayName: string) => void
+  isUserOnline?: (userId: string) => boolean
+  hasMore?: boolean
+  loadingMore?: boolean
+  onLoadMore?: () => void
 }
 
 function formatPreviewTime(iso: string) {
@@ -37,14 +42,28 @@ export function ConversationList({
   activeId,
   onSelect,
   onNewChat,
-  onDelete,
+  onRequestDelete,
+  isUserOnline,
+  hasMore,
+  loadingMore,
+  onLoadMore,
 }: ConversationListProps) {
+  const handleScroll = useCallback(
+    (event: UIEvent<HTMLDivElement>) => {
+      if (!hasMore || loadingMore || !onLoadMore) return
+      const target = event.currentTarget
+      const remaining = target.scrollHeight - target.scrollTop - target.clientHeight
+      if (remaining <= 120) {
+        onLoadMore()
+      }
+    },
+    [hasMore, loadingMore, onLoadMore],
+  )
+
   function handleDelete(e: MouseEvent, conv: ConversationPreview) {
     e.stopPropagation()
     const name = conv.participant?.displayName ?? 'this session'
-    if (window.confirm(`Delete wellness session with ${name}?`)) {
-      onDelete(conv.id)
-    }
+    onRequestDelete(conv.id, name)
   }
 
   return (
@@ -63,7 +82,7 @@ export function ConversationList({
         </button>
       </header>
 
-      <div className="conversation-list__items">
+      <div className="conversation-list__items" onScroll={handleScroll}>
         {conversations.length === 0 ? (
           <p className="conversation-list__empty">{BRAND.emptySessions}</p>
         ) : (
@@ -81,7 +100,7 @@ export function ConversationList({
                   className="conversation-item__main"
                   onClick={() => onSelect(conv.id)}
                 >
-                  <Avatar user={participant} />
+                  <Avatar user={participant} online={isUserOnline?.(participant.id)} />
                   <div className="conversation-item__content">
                     <div className="conversation-item__top">
                       <span className="conversation-item__name">{participant.displayName}</span>
@@ -118,6 +137,7 @@ export function ConversationList({
           })
         )}
       </div>
+      {loadingMore && <div className="conversation-list__paging-state">Loading more sessions...</div>}
     </aside>
   )
 }

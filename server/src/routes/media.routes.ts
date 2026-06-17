@@ -2,8 +2,8 @@ import { Router, type Request, type Response } from 'express'
 import type { AuthRequest } from '../middleware/auth.middleware.js'
 import { requireAuth } from '../middleware/auth.middleware.js'
 import {
-  mediaUrlForAudio,
-  mediaUrlForImage,
+  persistAudio,
+  persistImage,
   uploadAudio,
   uploadImage,
 } from '../middleware/upload.middleware.js'
@@ -14,7 +14,7 @@ router.use(requireAuth)
 
 function handleUpload(
   uploader: typeof uploadImage,
-  urlBuilder: (filename: string) => string,
+  persistFile: (file: Express.Multer.File) => Promise<string>,
 ) {
   return (req: AuthRequest, res: Response) => {
     uploader(req as Request, res, (err: unknown) => {
@@ -29,12 +29,18 @@ function handleUpload(
         return
       }
 
-      res.status(201).json({ url: urlBuilder(req.file.filename) })
+      persistFile(req.file)
+        .then((url) => {
+          res.status(201).json({ url })
+        })
+        .catch(() => {
+          res.status(500).json({ error: 'Failed to store media' })
+        })
     })
   }
 }
 
-router.post('/image', handleUpload(uploadImage, mediaUrlForImage))
-router.post('/audio', handleUpload(uploadAudio, mediaUrlForAudio))
+router.post('/image', handleUpload(uploadImage, persistImage))
+router.post('/audio', handleUpload(uploadAudio, persistAudio))
 
 export default router

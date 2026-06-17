@@ -28,9 +28,25 @@ export function PinLockScreen({ onUnlock }: PinLockScreenProps) {
     }
   }
 
-  function handlePinInput(value: string) {
-    const digits = value.replace(/\D/g, '').slice(0, 6)
-    setPin(digits)
+  function handleKeyPress(digit: string) {
+    if (submitting) return
+    setPin((prev) => {
+      if (prev.length >= 4) return prev
+      const next = (prev + digit).slice(0, 4)
+      setError('')
+      return next
+    })
+  }
+
+  function handleBackspace() {
+    if (submitting) return
+    setPin((prev) => prev.slice(0, -1))
+    setError('')
+  }
+
+  function handleClear() {
+    if (submitting) return
+    setPin('')
     setError('')
   }
 
@@ -51,23 +67,117 @@ export function PinLockScreen({ onUnlock }: PinLockScreenProps) {
             ))}
           </div>
 
-          <input
-            type="tel"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            maxLength={6}
-            value={pin}
-            onChange={(e) => handlePinInput(e.target.value)}
-            className="pin-lock__input"
-            autoFocus
-            autoComplete="off"
-            aria-label="Wellness PIN"
-            placeholder="Enter PIN"
-          />
+          <div className="pin-lock__keypad" aria-label="PIN keypad">
+            <div className="pin-lock__keypad-row">
+              <button
+                type="button"
+                className="pin-lock__key"
+                onClick={() => handleKeyPress('1')}
+                disabled={submitting || pin.length >= 4}
+              >
+                1
+              </button>
+              <button
+                type="button"
+                className="pin-lock__key"
+                onClick={() => handleKeyPress('2')}
+                disabled={submitting || pin.length >= 4}
+              >
+                2
+              </button>
+              <button
+                type="button"
+                className="pin-lock__key"
+                onClick={() => handleKeyPress('3')}
+                disabled={submitting || pin.length >= 4}
+              >
+                3
+              </button>
+            </div>
+            <div className="pin-lock__keypad-row">
+              <button
+                type="button"
+                className="pin-lock__key"
+                onClick={() => handleKeyPress('4')}
+                disabled={submitting || pin.length >= 4}
+              >
+                4
+              </button>
+              <button
+                type="button"
+                className="pin-lock__key"
+                onClick={() => handleKeyPress('5')}
+                disabled={submitting || pin.length >= 4}
+              >
+                5
+              </button>
+              <button
+                type="button"
+                className="pin-lock__key"
+                onClick={() => handleKeyPress('6')}
+                disabled={submitting || pin.length >= 4}
+              >
+                6
+              </button>
+            </div>
+            <div className="pin-lock__keypad-row">
+              <button
+                type="button"
+                className="pin-lock__key"
+                onClick={() => handleKeyPress('7')}
+                disabled={submitting || pin.length >= 4}
+              >
+                7
+              </button>
+              <button
+                type="button"
+                className="pin-lock__key"
+                onClick={() => handleKeyPress('8')}
+                disabled={submitting || pin.length >= 4}
+              >
+                8
+              </button>
+              <button
+                type="button"
+                className="pin-lock__key"
+                onClick={() => handleKeyPress('9')}
+                disabled={submitting || pin.length >= 4}
+              >
+                9
+              </button>
+            </div>
+            <div className="pin-lock__keypad-row">
+              <button
+                type="button"
+                className="pin-lock__key pin-lock__key--secondary"
+                onClick={handleClear}
+                disabled={submitting || pin.length === 0}
+              >
+                Clear
+              </button>
+              <button
+                type="button"
+                className="pin-lock__key"
+                onClick={() => handleKeyPress('0')}
+                disabled={submitting || pin.length >= 4}
+              >
+                0
+              </button>
+              <button
+                type="button"
+                className="pin-lock__key pin-lock__key--secondary"
+                onClick={handleBackspace}
+                disabled={submitting || pin.length === 0}
+                aria-label="Delete digit"
+              >
+                ⌫
+              </button>
+            </div>
+          </div>
 
           {error && <p className="pin-lock__error">{error}</p>}
 
-          <button type="submit" disabled={pin.length < 4 || submitting}>
+          <button type="submit" disabled={pin.length !== 4 || submitting}>
             {submitting ? 'Verifying…' : 'Resume Session'}
           </button>
         </form>

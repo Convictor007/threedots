@@ -1,10 +1,31 @@
 export type MessageType = 'text' | 'image' | 'voice'
 
+export type UserRole = 'user' | 'admin'
+
 export interface User {
   id: string
   username: string
   displayName: string
   avatarColor: string
+  avatarUrl?: string
+  lastSeenAt?: string
+  role?: UserRole
+}
+
+export interface AdminUser extends User {
+  createdAt: string
+  updatedAt: string
+  sessionCount: number
+  messageCount: number
+  conversationCount: number
+}
+
+export interface AdminDashboardStats {
+  totalUsers: number
+  adminUsers: number
+  activeSessions: number
+  totalMessages: number
+  totalConversations: number
 }
 
 export interface Message {
@@ -16,6 +37,9 @@ export interface Message {
   mediaUrl?: string
   duration?: number
   createdAt: string
+  clientId?: string
+  sendStatus?: 'queued' | 'sending' | 'failed' | 'sent'
+  errorText?: string
 }
 
 export interface ConversationPreview {
@@ -23,6 +47,12 @@ export interface ConversationPreview {
   participant: User | null
   lastMessage: Message | null
   updatedAt: string
+}
+
+export interface PaginationMeta {
+  page: number
+  limit: number
+  hasMore: boolean
 }
 
 export interface AuthResponse {
